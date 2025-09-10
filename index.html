@@ -4,15 +4,10 @@
     <meta charset="UTF-8" />
 
 <!-- [for example.com] add the following to the head of any page -->
-    <meta http-equiv="origin-trial" content="AkNLPHR1HO43IMV472ENEOGiEJLHPBoKyhDhttkSSA8H7puo/sHBWW+9HU20IZVlT8WHpDISnbKdv5kfG3D6VAIAAABeeyJvcmlnaW4iOiJodHRwczovL3JvcmFqYS5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkNsaXBib2FyZENoYW5nZUV2ZW50IiwiZXhwaXJ5IjoxNzY5NDcyMDAwfQ==">
+    <meta http-equiv="origin-trial" content="Av0/jwmiL8SqL48zH8hqoUQ9g4g1mY4fxOwcO4CgjbLltZSdKMBaI1k9W8Ey9Yef3qwyv5ZW/n+UA0OBszqDUQ8AAABceyJvcmlnaW4iOiJodHRwczovL2dka2pyNS5jc2IuYXBwOjQ0MyIsImZlYXR1cmUiOiJDbGlwYm9hcmRDaGFuZ2VFdmVudCIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Clipboard Format Checker</title>
-    <style>
-      body:focus-within {
-        background-color: green;
-      }
-    </style>
   </head>
   <body>
     <h1>Clipboardchange event demo app - Paste formats viewer - CHROME OT</h1>
@@ -66,76 +61,75 @@
         logDiv.appendChild(newLog);
       }
 
-      async function checkClipboard(e) {
+      async function checkClipboard(event) {
         try {
-          log("Clipboard change handler called!");
-          log(e);
-          log(e.types);
+          log("Clipboard changed!");
+          
+          // First, update button states based on available types
+          if (event && event.types) {
+            log("Available types:", event.types);
+            
+            const hasText = event.types.includes("text/plain");
+            const hasImage = event.types.some(type => type.startsWith("image/"));
+            const hasHtml = event.types.includes("text/html");
+            
+            document.getElementById("pasteText").disabled = !hasText;
+            document.getElementById("pasteImg").disabled = !hasImage;
+            document.getElementById("pasteHtml").disabled = !hasHtml;
+          }
+          
+          // Then, read and display clipboard contents
           const clipboardItems = await navigator.clipboard.read();
-          let formats = {};
-
+          
           for (const item of clipboardItems) {
+            // Handle text content
             if (item.types.includes("text/plain")) {
               const textBlob = await item.getType("text/plain");
               const text = await textBlob.text();
               document.getElementById("clipboardText").innerText = text;
-              formats.text = true;
             } else {
               document.getElementById("clipboardText").innerText = "N/A";
             }
-            if (
-              item.types.includes("image/png") ||
-              item.types.includes("image/jpeg")
-            ) {
-              const imgBlob = await item.getType(
-                item.types.find((type) => type.startsWith("image/"))
-              );
+            
+            // Handle image content
+            const imageType = item.types.find(type => type.startsWith("image/"));
+            if (imageType) {
+              const imgBlob = await item.getType(imageType);
               const imgUrl = URL.createObjectURL(imgBlob);
-              document.getElementById(
-                "clipboardImg"
-              ).innerHTML = `<img src="${imgUrl}" alt="Clipboard Image" width="150">`;
-              formats.img = true;
+              document.getElementById("clipboardImg").innerHTML = 
+                `<img src="${imgUrl}" alt="Clipboard Image" width="150">`;
             } else {
               document.getElementById("clipboardImg").innerText = "N/A";
             }
+            
+            // Handle HTML content
             if (item.types.includes("text/html")) {
               const htmlBlob = await item.getType("text/html");
               const html = await htmlBlob.text();
               document.getElementById("clipboardHtml").innerText = html;
-              formats.html = true;
             } else {
               document.getElementById("clipboardHtml").innerText = "N/A";
             }
           }
-
-          document.getElementById("pasteText").disabled = !formats.text;
-          document.getElementById("pasteImg").disabled = !formats.img;
-          document.getElementById("pasteHtml").disabled = !formats.html;
         } catch (err) {
+          log("Failed to read clipboard contents: " + err.message);
           console.error("Failed to read clipboard contents: ", err);
         }
       }
 
-      if (isClipboardChangeEventAvailable) {
-        // Try to read the clipboard to trigger a permissions prompt if required.
-        // navigator.clipboard.readText().then(() => {
-          log("Adding listener to clipboardchange event");
-         // navigator.clipboard.writeText("sdad");
-
-          // Invoke the on clipboardchange handler on page load to initialize current UI state
-          // checkClipboard();
-
-          // Start listening to the clipboardchange event
-          navigator.clipboard.addEventListener(
-            "clipboardchange",
-            checkClipboard
-          );
-
-        // });
-      } else {
-        // Invoke the on clipboardchange handler on page load to initialize current UI state
+      if ('onclipboardchange' in navigator.clipboard) {
+        log("Clipboardchange event supported - adding listener");
+        
+        // Start listening to the clipboardchange event
+        navigator.clipboard.addEventListener("clipboardchange", checkClipboard);
+        
+        // Initialize current state
         checkClipboard();
-        // Since clipboardchange event is not available, fallback to polling
+      } else {
+        log("Clipboardchange event not supported - using polling fallback");
+        
+        // Fallback to polling every 2 seconds
+        checkClipboard();
         setInterval(checkClipboard, 2000);
       }
 
