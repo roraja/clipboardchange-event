@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
 
 <!-- [for example.com] add the following to the head of any page -->
-    <meta http-equiv="origin-trial" content="Av0/jwmiL8SqL48zH8hqoUQ9g4g1mY4fxOwcO4CgjbLltZSdKMBaI1k9W8Ey9Yef3qwyv5ZW/n+UA0OBszqDUQ8AAABceyJvcmlnaW4iOiJodHRwczovL2dka2pyNS5jc2IuYXBwOjQ0MyIsImZlYXR1cmUiOiJDbGlwYm9hcmRDaGFuZ2VFdmVudCIsImV4cGlyeSI6MTc2OTQ3MjAwMH0=">
+    <meta http-equiv="origin-trial" content="AkNLPHR1HO43IMV472ENEOGiEJLHPBoKyhDhttkSSA8H7puo/sHBWW+9HU20IZVlT8WHpDISnbKdv5kfG3D6VAIAAABeeyJvcmlnaW4iOiJodHRwczovL3JvcmFqYS5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkNsaXBib2FyZENoYW5nZUV2ZW50IiwiZXhwaXJ5IjoxNzY5NDcyMDAwfQ==">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Clipboard Format Checker</title>
@@ -67,7 +67,7 @@
           
           // First, update button states based on available types
           if (event && event.types) {
-            log("Available types:", event.types);
+            log("Available types: " + JSON.stringify(event.types));
             
             const hasText = event.types.includes("text/plain");
             const hasImage = event.types.some(type => type.startsWith("image/"));
